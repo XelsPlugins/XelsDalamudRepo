@@ -14,13 +14,12 @@ These instructions apply to the custom Dalamud feed repository.
 - Do not use GitHub Actions artifacts as download URLs.
 - PR preview updates may only touch testing fields:
   - `TestingAssemblyVersion`
-  - `TestingChangelog`
   - `TestingDalamudApiLevel`
   - `DownloadLinkTesting`
+- Full preview release notes belong on the GitHub prerelease page, not in `pluginmaster.json`.
 - Stable field updates may only come from the manual stable release workflow.
 - Stable release updates may touch:
   - `AssemblyVersion`
   - `DownloadLinkInstall`
   - `DownloadLinkUpdate`
-  - stable changelog/release metadata
-
+- Full stable release notes belong on the GitHub Release page, not in `pluginmaster.json`.

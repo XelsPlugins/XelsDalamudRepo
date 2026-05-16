@@ -139,7 +139,7 @@ def normalize_repo_metadata(value: Any, repo: str) -> Any:
     return value
 
 
-def base_entry(manifest: dict[str, Any], repo: str, download_url: str, changelog: str) -> dict[str, Any]:
+def base_entry(manifest: dict[str, Any], repo: str, download_url: str) -> dict[str, Any]:
     download_url = normalize_repo_metadata(download_url, repo)
     entry: dict[str, Any] = {
         "Author": manifest.get("Author", ""),
@@ -168,8 +168,6 @@ def base_entry(manifest: dict[str, Any], repo: str, download_url: str, changelog
     for key in ["IconUrl", "Tags", "CategoryTags", "ImageUrls", "MinimumDalamudVersion"]:
         if key in manifest:
             entry[key] = normalize_repo_metadata(manifest[key], repo)
-    if changelog:
-        entry["Changelog"] = changelog
     return entry
 
 
@@ -182,7 +180,6 @@ def add_testing(entry: dict[str, Any], release: ReleaseInfo) -> None:
         return
 
     entry["TestingAssemblyVersion"] = str(manifest["AssemblyVersion"])
-    entry["TestingChangelog"] = release.body
     entry["TestingDalamudApiLevel"] = int(manifest.get("DalamudApiLevel", entry.get("DalamudApiLevel", 0)))
     entry["DownloadLinkTesting"] = download_url
 
@@ -199,7 +196,7 @@ def build_entries(repo: str) -> list[dict[str, Any]]:
 
     stable = max(stable_releases, key=lambda release: release_version_key(release.tag))
     manifest, download_url = manifest_from_assets(stable)
-    entry = base_entry(manifest, repo, download_url, stable.body)
+    entry = base_entry(manifest, repo, download_url)
 
     previews = [
         release for release in releases

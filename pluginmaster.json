@@ -29,7 +29,6 @@
     ],
     "MinimumDalamudVersion": "15.0.0.0",
     "TestingAssemblyVersion": "2.3.0.4",
-    "TestingChangelog": "## Technical/Internal\n- Rename release notes heading\n- Document feed token requirement (#7)\n- Align XelsCombatAI with ecosystem release model (#6)\n- Migrate repository references to XelsPlugins (#5)\n- Add reusable PR preview and release workflows\n- Bump version to v2.3.0.1-pre [skip release bump]",
     "TestingDalamudApiLevel": 15
   }
 ]
