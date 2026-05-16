@@ -1,0 +1,5 @@
+# One plugin repository slug per line.
+# Blank lines and comments are ignored.
+Xeltor/XelsCombatAI
+Xeltor/XelsTweaks
+
