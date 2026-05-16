@@ -18,6 +18,12 @@ from typing import Any
 
 STABLE_TAG_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:\.(?P<build>\d+))?$")
 PREVIEW_TAG_RE = re.compile(r"^pr-(?P<number>\d+)$")
+LEGACY_GITHUB_URLS = (
+    ("https://github.com/Xeltor/", "https://github.com/XelsPlugins/"),
+    ("https://github.com/xeltor/", "https://github.com/XelsPlugins/"),
+    ("https://raw.githubusercontent.com/Xeltor/", "https://raw.githubusercontent.com/XelsPlugins/"),
+    ("https://raw.githubusercontent.com/xeltor/", "https://raw.githubusercontent.com/XelsPlugins/"),
+)
 
 
 @dataclass(frozen=True)
@@ -114,7 +120,27 @@ def manifest_from_assets(release: ReleaseInfo) -> tuple[dict[str, Any], str]:
     raise RuntimeError(f"No manifest/zip assets found for {release.repo} {release.tag}")
 
 
+def normalize_repo_metadata(value: Any, repo: str) -> Any:
+    if isinstance(value, str):
+        normalized = value
+        for old, new in LEGACY_GITHUB_URLS:
+            normalized = normalized.replace(old, new)
+
+        repo_name = repo.rsplit("/", 1)[-1]
+        normalized = normalized.replace(f"/{repo_name}/master/", f"/{repo_name}/main/")
+        return normalized
+
+    if isinstance(value, list):
+        return [normalize_repo_metadata(item, repo) for item in value]
+
+    if isinstance(value, dict):
+        return {key: normalize_repo_metadata(item, repo) for key, item in value.items()}
+
+    return value
+
+
 def base_entry(manifest: dict[str, Any], repo: str, download_url: str, changelog: str) -> dict[str, Any]:
+    download_url = normalize_repo_metadata(download_url, repo)
     entry: dict[str, Any] = {
         "Author": manifest.get("Author", ""),
         "Name": manifest["Name"],
@@ -141,7 +167,7 @@ def base_entry(manifest: dict[str, Any], repo: str, download_url: str, changelog
 
     for key in ["IconUrl", "Tags", "CategoryTags", "ImageUrls", "MinimumDalamudVersion"]:
         if key in manifest:
-            entry[key] = manifest[key]
+            entry[key] = normalize_repo_metadata(manifest[key], repo)
     if changelog:
         entry["Changelog"] = changelog
     return entry
@@ -149,6 +175,7 @@ def base_entry(manifest: dict[str, Any], repo: str, download_url: str, changelog
 
 def add_testing(entry: dict[str, Any], release: ReleaseInfo) -> None:
     manifest, download_url = manifest_from_assets(release)
+    download_url = normalize_repo_metadata(download_url, release.repo)
     stable_version = assembly_version_key(entry["AssemblyVersion"])
     testing_version = assembly_version_key(manifest["AssemblyVersion"])
     if testing_version <= stable_version:
