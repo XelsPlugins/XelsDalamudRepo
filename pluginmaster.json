@@ -19,7 +19,7 @@
     "LastUpdate": 0,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.3.0.0/XelsCombatAI.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.3.0.0/XelsCombatAI.zip",
-    "DownloadLinkTesting": "",
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/pr-6/XelsCombatAI.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsCombatAI",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsCombatAI/main/XelsCombatAI/images/icon.png",
     "Tags": [
@@ -27,6 +27,9 @@
       "bossmod",
       "ai"
     ],
-    "MinimumDalamudVersion": "15.0.0.0"
+    "MinimumDalamudVersion": "15.0.0.0",
+    "TestingAssemblyVersion": "2.3.0.2",
+    "TestingChangelog": "## Technical/Internal\n- Align XelsCombatAI with ecosystem release model\n- Migrate repository references to XelsPlugins (#5)\n- Add reusable PR preview and release workflows\n- Bump version to v2.3.0.1-pre [skip release bump]",
+    "TestingDalamudApiLevel": 15
   }
 ]
