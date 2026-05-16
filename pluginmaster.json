@@ -30,5 +30,34 @@
     "MinimumDalamudVersion": "15.0.0.0",
     "TestingAssemblyVersion": "2.3.0.5",
     "TestingDalamudApiLevel": 15
+  },
+  {
+    "Author": "xeltor",
+    "Name": "XelsTweaks",
+    "InternalName": "XelsTweaks",
+    "AssemblyVersion": "0.1.0.0",
+    "Description": "A modular Dalamud tweak hub for small opt-in quality-of-life features.",
+    "ApplicableVersion": "any",
+    "DalamudApiLevel": 15,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "CanUnloadAsync": false,
+    "LoadPriority": 0,
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "Punchline": "A modular collection of small quality-of-life tweaks.",
+    "AcceptsFeedback": true,
+    "DownloadCount": 0,
+    "LastUpdate": 1778936441,
+    "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.1.0/XelsTweaks.zip",
+    "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.1.0/XelsTweaks.zip",
+    "DownloadLinkTesting": "",
+    "RepoUrl": "https://github.com/XelsPlugins/XelsTweaks",
+    "Tags": [
+      "tweaks",
+      "qol",
+      "utility"
+    ],
+    "MinimumDalamudVersion": "15.0.0.0"
   }
 ]
