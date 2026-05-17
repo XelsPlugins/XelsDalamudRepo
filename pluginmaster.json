@@ -60,7 +60,7 @@
     ],
     "MinimumDalamudVersion": "15.0.0.0",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
-    "TestingAssemblyVersion": "0.4.0.22",
+    "TestingAssemblyVersion": "0.4.0.24",
     "TestingDalamudApiLevel": 15
   }
 ]
