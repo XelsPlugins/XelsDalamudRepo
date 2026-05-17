@@ -60,7 +60,7 @@
       "utility"
     ],
     "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "0.6.0.34",
+    "TestingAssemblyVersion": "0.6.0.35",
     "TestingDalamudApiLevel": 15
   }
 ]
