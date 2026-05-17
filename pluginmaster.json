@@ -16,7 +16,7 @@
     "Punchline": "Stops you from standing in the wrong place like a dummy.",
     "AcceptsFeedback": true,
     "DownloadCount": 0,
-    "LastUpdate": 1778937702,
+    "LastUpdate": 0,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.3.1/XelsCombatAI.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.3.1/XelsCombatAI.zip",
     "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/pr-10/XelsCombatAI.zip",
@@ -48,19 +48,19 @@
     "Punchline": "A modular collection of small quality-of-life tweaks.",
     "AcceptsFeedback": true,
     "DownloadCount": 0,
-    "LastUpdate": 1778983739,
+    "LastUpdate": 0,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.4.0/XelsTweaks.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.4.0/XelsTweaks.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/pr-11/XelsTweaks.zip",
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/pr-12/XelsTweaks.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsTweaks",
+    "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
     "Tags": [
       "tweaks",
       "qol",
       "utility"
     ],
     "MinimumDalamudVersion": "15.0.0.0",
-    "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
-    "TestingAssemblyVersion": "0.4.0.28",
+    "TestingAssemblyVersion": "0.4.0.24",
     "TestingDalamudApiLevel": 15
   }
 ]
