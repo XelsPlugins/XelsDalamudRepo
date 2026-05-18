@@ -36,7 +36,7 @@
     "Name": "XelsTweaks",
     "InternalName": "XelsTweaks",
     "AssemblyVersion": "0.5.0.0",
-    "Description": "A modular Dalamud tweak hub for small opt-in quality-of-life features.",
+    "Description": "A modular Dalamud tweak hub for opt-in interface and utility fixes.",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
     "LoadRequiredState": 0,
@@ -45,13 +45,13 @@
     "LoadPriority": 0,
     "IsHide": false,
     "IsTestingExclusive": false,
-    "Punchline": "A modular collection of small quality-of-life tweaks.",
+    "Punchline": "For when staring at frustrations angrily doesn't resolve them!",
     "AcceptsFeedback": true,
     "DownloadCount": 0,
     "LastUpdate": 0,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.5.0/XelsTweaks.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.5.0/XelsTweaks.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/pr-17/XelsTweaks.zip",
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/pr-18/XelsTweaks.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsTweaks",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
     "Tags": [
@@ -60,7 +60,7 @@
       "utility"
     ],
     "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "0.6.0.38",
+    "TestingAssemblyVersion": "0.6.0.39",
     "TestingDalamudApiLevel": 15
   }
 ]
