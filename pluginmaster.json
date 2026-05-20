@@ -51,7 +51,7 @@
     "LastUpdate": 0,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.6.0/XelsTweaks.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.6.0/XelsTweaks.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/pr-21/XelsTweaks.zip",
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/pr-22/XelsTweaks.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsTweaks",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
     "Tags": [
@@ -60,7 +60,7 @@
       "utility"
     ],
     "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "0.7.0.43",
+    "TestingAssemblyVersion": "0.7.0.44",
     "TestingDalamudApiLevel": 15
   }
 ]
