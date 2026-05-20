@@ -30,6 +30,36 @@
     "MinimumDalamudVersion": "15.0.0.0"
   },
   {
+    "Author": "Xeltor / XelsPlugins, originally by Blackcatz1911",
+    "Name": "Xel's Currency Spender",
+    "InternalName": "XelsCurrencySpender",
+    "AssemblyVersion": "1.2.6.0",
+    "Description": "AI-maintained fork of Blackcatz1911's Currency Spender. Never wonder 'What should I do with this?' again: access real-time prices from Universalis, identify missing collectibles tied to your currencies, and find useful ways to spend in-game resources.",
+    "ApplicableVersion": "any",
+    "DalamudApiLevel": 15,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "CanUnloadAsync": false,
+    "LoadPriority": 0,
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "Punchline": "Discover how to use all the in-game currencies.",
+    "AcceptsFeedback": true,
+    "DownloadCount": 0,
+    "LastUpdate": 1779286063,
+    "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCurrencySpender/releases/download/v1.2.6/XelsCurrencySpender.zip",
+    "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCurrencySpender/releases/download/v1.2.6/XelsCurrencySpender.zip",
+    "DownloadLinkTesting": "",
+    "RepoUrl": "https://github.com/XelsPlugins/XelsCurrencySpender",
+    "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsCurrencySpender/main/XelsCurrencySpender/images/logo.png",
+    "Tags": [
+      "currency",
+      "poetics",
+      "tomestone"
+    ],
+    "MinimumDalamudVersion": "15.0.0.0"
+  },
+  {
     "Author": "xeltor",
     "Name": "XelsTweaks",
     "InternalName": "XelsTweaks",
