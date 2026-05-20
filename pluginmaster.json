@@ -88,6 +88,9 @@
       "qol",
       "utility"
     ],
-    "MinimumDalamudVersion": "15.0.0.0"
+    "MinimumDalamudVersion": "15.0.0.0",
+    "TestingAssemblyVersion": "0.8.1.4",
+    "TestingDalamudApiLevel": 15,
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/testing/XelsTweaks.zip"
   }
 ]
