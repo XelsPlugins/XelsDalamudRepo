@@ -84,6 +84,9 @@ def main() -> int:
         build_args = ["dotnet", "build", str(project), "-c", args.configuration, "-p:EnableWindowsTargeting=true"]
         if args.version:
             build_args.append(f"-p:Version={args.version}")
+            build_args.append(f"-p:AssemblyVersion={args.version}")
+            build_args.append(f"-p:FileVersion={args.version}")
+            build_args.append(f"-p:InformationalVersion={args.version}")
         run(build_args)
 
     packager_zip = find_packager_zip(project, args.configuration, internal_name)
@@ -97,6 +100,12 @@ def main() -> int:
 
     shutil.copyfile(packager_zip, zip_output)
     built_manifest = manifest_from_zip(packager_zip, internal_name) or source_manifest
+    if args.version and str(built_manifest.get("AssemblyVersion", "")) != args.version:
+        raise SystemExit(
+            f"Built manifest AssemblyVersion {built_manifest.get('AssemblyVersion')} "
+            f"does not match expected {args.version}"
+        )
+
     json_output.write_text(json.dumps(built_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(f"internal_name={internal_name}")

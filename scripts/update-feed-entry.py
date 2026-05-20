@@ -127,6 +127,11 @@ def main() -> int:
     manifest = load_json(Path(args.manifest))
     if not isinstance(manifest, dict):
         raise SystemExit("Manifest must be a JSON object")
+    if str(manifest.get("AssemblyVersion", "")) != args.assembly_version:
+        raise SystemExit(
+            f"Manifest AssemblyVersion {manifest.get('AssemblyVersion')} "
+            f"does not match expected {args.assembly_version}"
+        )
 
     internal_name = str(manifest["InternalName"])
     data = load_json(feed_path)
