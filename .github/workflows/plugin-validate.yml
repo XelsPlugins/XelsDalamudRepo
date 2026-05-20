@@ -51,8 +51,14 @@ jobs:
           before="${{ github.event.before }}"
           if [ -z "$before" ] || [[ "$before" =~ ^0+$ ]]; then
             python .xels-repo/scripts/validate-commit-messages.py
-          else
+          elif git rev-parse --verify --quiet "${before}^{commit}" >/dev/null; then
             python .xels-repo/scripts/validate-commit-messages.py --range "${before}..HEAD"
+          elif git rev-parse --verify --quiet "HEAD^" >/dev/null; then
+            echo "::warning::Push before commit $before is unavailable in this checkout; validating the HEAD commit only."
+            python .xels-repo/scripts/validate-commit-messages.py --range "HEAD^..HEAD"
+          else
+            echo "::warning::Push before commit $before is unavailable in this checkout; validating all reachable commits from HEAD."
+            python .xels-repo/scripts/validate-commit-messages.py
           fi
 
       - name: Detect ECommons reference
