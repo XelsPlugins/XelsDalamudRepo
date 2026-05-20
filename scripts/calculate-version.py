@@ -9,6 +9,8 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -33,6 +35,14 @@ class StableTag:
 
 def run_git(args: list[str], check: bool = True) -> str:
     result = subprocess.run(["git", *args], text=True, capture_output=True, check=False)
+    if check and result.returncode != 0:
+        print(result.stderr, file=sys.stderr)
+        raise SystemExit(result.returncode)
+    return result.stdout.strip()
+
+
+def run_gh(args: list[str], check: bool = True) -> str:
+    result = subprocess.run(["gh", *args], text=True, capture_output=True, check=False)
     if check and result.returncode != 0:
         print(result.stderr, file=sys.stderr)
         raise SystemExit(result.returncode)
@@ -160,6 +170,51 @@ def feed_versions(feed_path: Path | None, internal_name: str) -> tuple[tuple[int
     return version_key(entry.get("AssemblyVersion")), version_key(entry.get("TestingAssemblyVersion"))
 
 
+def download_json_asset(url: str) -> dict[str, object] | None:
+    with tempfile.TemporaryDirectory() as tmp:
+        destination = Path(tmp) / "manifest.json"
+        try:
+            with urllib.request.urlopen(url, timeout=60) as response:
+                destination.write_bytes(response.read())
+            data = json.loads(destination.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    return data if isinstance(data, dict) else None
+
+
+def historical_release_version(repo: str, internal_name: str) -> tuple[int, int, int, int]:
+    if not repo or not internal_name:
+        return ZERO_VERSION
+
+    raw = run_gh(["api", f"repos/{repo}/releases", "--paginate"], check=False)
+    if not raw:
+        return ZERO_VERSION
+
+    try:
+        releases = json.loads(raw)
+    except json.JSONDecodeError:
+        return ZERO_VERSION
+
+    highest = ZERO_VERSION
+    for release in releases:
+        if not isinstance(release, dict):
+            continue
+
+        for asset in release.get("assets") or []:
+            if not isinstance(asset, dict) or asset.get("name") != f"{internal_name}.json":
+                continue
+
+            manifest = download_json_asset(str(asset.get("browser_download_url") or ""))
+            if manifest is None or manifest.get("InternalName") != internal_name:
+                continue
+
+            highest = max(highest, version_key(manifest.get("AssemblyVersion")))
+            break
+
+    return highest
+
+
 def write_github_output(values: dict[str, object]) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
     if not output_path:
@@ -177,6 +232,7 @@ def main() -> int:
     parser.add_argument("--run-number", default="0")
     parser.add_argument("--feed", default="")
     parser.add_argument("--internal-name", default="")
+    parser.add_argument("--repo", default="")
     args = parser.parse_args()
 
     stable = latest_stable_tag()
@@ -189,8 +245,9 @@ def main() -> int:
     build = int(args.run_number or "0")
     if args.mode == "testing":
         feed_stable, feed_testing = feed_versions(Path(args.feed) if args.feed else None, args.internal_name)
-        testing_base = max(next_version, version_base(feed_stable), version_base(feed_testing))
-        testing_build = max(build, feed_testing[3] + 1, 1)
+        historical_testing = historical_release_version(args.repo, args.internal_name)
+        testing_base = max(next_version, version_base(feed_stable), version_base(feed_testing), version_base(historical_testing))
+        testing_build = max(build, feed_testing[3] + 1, historical_testing[3] + 1, 1)
         assembly_version = f"{testing_base[0]}.{testing_base[1]}.{testing_base[2]}.{testing_build}"
         tag = "testing"
         notes_from_ref = "testing" if tag_exists("testing") else stable.tag
