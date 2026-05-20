@@ -17,7 +17,7 @@ from typing import Any
 
 
 STABLE_TAG_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:\.(?P<build>\d+))?$")
-PREVIEW_TAG_RE = re.compile(r"^pr-(?P<number>\d+)$")
+TESTING_TAG = "testing"
 LEGACY_GITHUB_URLS = (
     ("https://github.com/Xeltor/", "https://github.com/XelsPlugins/"),
     ("https://github.com/xeltor/", "https://github.com/XelsPlugins/"),
@@ -198,19 +198,15 @@ def build_entries(repo: str) -> list[dict[str, Any]]:
     manifest, download_url = manifest_from_assets(stable)
     entry = base_entry(manifest, repo, download_url)
 
-    previews = [
-        release for release in releases
-        if release.prerelease and PREVIEW_TAG_RE.match(release.tag)
-    ]
-    previews.sort(key=lambda release: int(PREVIEW_TAG_RE.match(release.tag).group("number")), reverse=True)
-    for preview in previews:
+    testing = next(
+        (release for release in releases if release.prerelease and release.tag == TESTING_TAG),
+        None,
+    )
+    if testing is not None:
         try:
-            before = dict(entry)
-            add_testing(entry, preview)
-            if entry != before:
-                break
+            add_testing(entry, testing)
         except Exception as exc:  # noqa: BLE001 - defensive feed generation
-            print(f"warning: failed to read preview {repo} {preview.tag}: {exc}", file=sys.stderr)
+            print(f"warning: failed to read testing release {repo} {testing.tag}: {exc}", file=sys.stderr)
 
     return [entry]
 

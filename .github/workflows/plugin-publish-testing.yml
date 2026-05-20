@@ -1,0 +1,193 @@
+name: Plugin Publish Testing
+
+on:
+  workflow_call:
+    inputs:
+      plugin_project_path:
+        required: true
+        type: string
+      feed_repo:
+        required: true
+        type: string
+      source_ref:
+        required: true
+        type: string
+      release_type:
+        required: true
+        type: string
+      dotnet_version:
+        required: true
+        type: string
+      internal_name:
+        required: false
+        type: string
+        default: ""
+      dalamud_distribution:
+        required: false
+        type: string
+        default: stable
+      automation_ref:
+        required: false
+        type: string
+        default: main
+    secrets:
+      feed_token:
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish-testing:
+    runs-on: ubuntu-latest
+    env:
+      DALAMUD_HOME: /tmp/dalamud
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.source_ref }}
+          submodules: recursive
+
+      - name: Checkout feed automation
+        uses: actions/checkout@v4
+        with:
+          repository: XelsPlugins/XelsDalamudRepo
+          ref: ${{ inputs.automation_ref }}
+          path: .xels-repo
+
+      - name: Detect ECommons reference
+        id: ecommons
+        shell: bash
+        run: |
+          if grep -q "ECommons" "${{ inputs.plugin_project_path }}"; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout ECommons
+        if: steps.ecommons.outputs.needed == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: NightmareXIV/ECommons
+          path: external/ECommons
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+
+      - name: Download Dalamud
+        shell: bash
+        env:
+          DALAMUD_DISTRIBUTION: ${{ inputs.dalamud_distribution }}
+        run: |
+          mkdir -p "$DALAMUD_HOME"
+          case "$DALAMUD_DISTRIBUTION" in
+            stable)
+              dalamud_url="https://goatcorp.github.io/dalamud-distrib/latest.zip"
+              ;;
+            stg|staging)
+              dalamud_url="https://goatcorp.github.io/dalamud-distrib/stg/latest.zip"
+              ;;
+            canary)
+              dalamud_url="https://goatcorp.github.io/dalamud-distrib/canary/latest.zip"
+              ;;
+            http://*|https://*)
+              dalamud_url="$DALAMUD_DISTRIBUTION"
+              ;;
+            *)
+              echo "Unsupported Dalamud distribution: $DALAMUD_DISTRIBUTION"
+              echo "Use stable, stg, canary, or a direct latest.zip URL."
+              exit 1
+              ;;
+          esac
+          curl -fsSL "$dalamud_url" -o /tmp/dalamud.zip
+          unzip -q -o /tmp/dalamud.zip -d "$DALAMUD_HOME"
+
+      - name: Calculate testing version
+        id: version
+        run: |
+          python .xels-repo/scripts/calculate-version.py \
+            --mode testing \
+            --release-type "${{ inputs.release_type }}" \
+            --run-number "${{ github.run_number }}"
+
+      - name: Build testing package
+        run: |
+          dotnet restore "${{ inputs.plugin_project_path }}" -p:EnableWindowsTargeting=true
+          dotnet build "${{ inputs.plugin_project_path }}" -c Release -p:EnableWindowsTargeting=true -p:Version=${{ steps.version.outputs.assembly_version }} --no-restore
+          python .xels-repo/scripts/package-plugin.py \
+            --project "${{ inputs.plugin_project_path }}" \
+            --configuration Release \
+            --internal-name "${{ inputs.internal_name }}" \
+            --version "${{ steps.version.outputs.assembly_version }}" \
+            --no-build
+
+      - name: Generate release notes
+        run: |
+          python .xels-repo/scripts/generate-release-notes.py \
+            --from-ref "${{ steps.version.outputs.current_tag }}" \
+            --output artifacts/release-notes.md
+
+      - name: Publish mutable testing release
+        id: release
+        shell: bash
+        run: |
+          tag="${{ steps.version.outputs.tag }}"
+          internal_name="$(find artifacts -maxdepth 1 -name '*.zip' -printf '%f\n' | sed 's/\.zip$//' | head -n1)"
+          zip_path="artifacts/${internal_name}.zip"
+          manifest_path="artifacts/${internal_name}.json"
+          release_url="https://github.com/${{ github.repository }}/releases/tag/${tag}"
+          target_sha="$(git rev-parse HEAD)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "$tag" "$target_sha"
+          git push -f origin "refs/tags/${tag}"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release edit "$tag" \
+              --title "${internal_name} Testing Build" \
+              --notes-file artifacts/release-notes.md \
+              --prerelease
+          else
+            gh release create "$tag" \
+              --title "${internal_name} Testing Build" \
+              --notes-file artifacts/release-notes.md \
+              --prerelease
+          fi
+
+          gh release upload "$tag" "$zip_path" "$manifest_path" --clobber
+          echo "internal_name=${internal_name}" >> "$GITHUB_OUTPUT"
+          echo "download_url=https://github.com/${{ github.repository }}/releases/download/${tag}/${internal_name}.zip" >> "$GITHUB_OUTPUT"
+          echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"
+
+      - name: Update testing feed fields
+        id: feed
+        env:
+          FEED_TOKEN: ${{ secrets.feed_token }}
+        shell: bash
+        run: |
+          git clone "https://x-access-token:${FEED_TOKEN}@github.com/${{ inputs.feed_repo }}.git" feed
+          python .xels-repo/scripts/update-feed-entry.py \
+            --feed-repo-dir feed \
+            --mode testing \
+            --manifest "artifacts/${{ steps.release.outputs.internal_name }}.json" \
+            --download-url "${{ steps.release.outputs.download_url }}" \
+            --assembly-version "${{ steps.version.outputs.assembly_version }}" \
+            --repo-url "https://github.com/${{ github.repository }}"
+
+          cd feed
+          if git diff --quiet -- pluginmaster.json; then
+            echo "No feed changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pluginmaster.json
+          git commit -m "chore: update ${{ steps.release.outputs.internal_name }} testing feed"
+          git push

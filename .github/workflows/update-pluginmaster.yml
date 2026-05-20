@@ -7,7 +7,7 @@ on:
   push:
     paths:
       - repos.txt
-      - scripts/update-pluginmaster.py
+      - scripts/**
 
 permissions:
   contents: write
@@ -38,4 +38,3 @@ jobs:
           git add pluginmaster.json
           git commit -m "chore: update pluginmaster"
           git push
-

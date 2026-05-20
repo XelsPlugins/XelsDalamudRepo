@@ -19,7 +19,7 @@
     "LastUpdate": 0,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.3.1/XelsCombatAI.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.3.1/XelsCombatAI.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/pr-13/XelsCombatAI.zip",
+    "DownloadLinkTesting": "",
     "RepoUrl": "https://github.com/XelsPlugins/XelsCombatAI",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsCombatAI/main/XelsCombatAI/images/icon.png",
     "Tags": [
@@ -27,9 +27,7 @@
       "bossmod",
       "ai"
     ],
-    "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "2.4.0.11",
-    "TestingDalamudApiLevel": 15
+    "MinimumDalamudVersion": "15.0.0.0"
   },
   {
     "Author": "xeltor",
@@ -51,7 +49,7 @@
     "LastUpdate": 0,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.6.0/XelsTweaks.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.6.0/XelsTweaks.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/pr-22/XelsTweaks.zip",
+    "DownloadLinkTesting": "",
     "RepoUrl": "https://github.com/XelsPlugins/XelsTweaks",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
     "Tags": [
@@ -59,8 +57,6 @@
       "qol",
       "utility"
     ],
-    "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "0.7.0.44",
-    "TestingDalamudApiLevel": 15
+    "MinimumDalamudVersion": "15.0.0.0"
   }
 ]

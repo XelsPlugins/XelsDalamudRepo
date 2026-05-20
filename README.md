@@ -10,6 +10,8 @@ https://raw.githubusercontent.com/XelsPlugins/XelsDalamudRepo/main/pluginmaster.
 
 Normal users should stay on stable builds unless they intentionally enable testing versions in Dalamud.
 
-Stable builds come from manually triggered release workflows in each plugin repository. Testing builds come from PR previews and are intended for checking changes before they are merged or released.
+Stable builds come from manually triggered release workflows in each plugin repository. Testing builds also come from manual workflow runs and update the mutable `testing` prerelease for each plugin.
+
+This repository also owns the shared GitHub Actions and helper scripts used by the plugin repositories for validation, testing publication, stable releases, packaging, and feed updates.
 
 This repository is not submitted to the official Dalamud plugin repository.
