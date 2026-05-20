@@ -114,19 +114,19 @@ jobs:
             --mode release \
             --release-type "${{ inputs.release_type }}"
 
-      - name: Stop when auto release has no user-facing bump
+      - name: Skip when auto release has no user-facing bump
         if: steps.version.outputs.should_release != 'true'
         run: |
-          echo "No user-facing release bump was detected."
-          exit 1
+          echo "No user-facing release bump was detected; skipping release."
 
       - name: Validate release commit messages
+        if: steps.version.outputs.should_release == 'true'
         run: |
           python .xels-repo/scripts/validate-commit-messages.py \
             --from-ref "${{ steps.version.outputs.notes_from_ref }}"
 
       - name: Refuse existing stable tag or release
-        if: inputs.dry_run != true
+        if: steps.version.outputs.should_release == 'true' && inputs.dry_run != true
         shell: bash
         run: |
           tag="${{ steps.version.outputs.tag }}"
@@ -140,6 +140,7 @@ jobs:
           fi
 
       - name: Build stable package
+        if: steps.version.outputs.should_release == 'true'
         run: |
           dotnet restore "${{ inputs.plugin_project_path }}" -p:EnableWindowsTargeting=true
           dotnet build "${{ inputs.plugin_project_path }}" -c Release -p:EnableWindowsTargeting=true -p:Version=${{ steps.version.outputs.assembly_version }} -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} -p:FileVersion=${{ steps.version.outputs.assembly_version }} -p:InformationalVersion=${{ steps.version.outputs.assembly_version }} --no-restore
@@ -151,13 +152,14 @@ jobs:
             --no-build
 
       - name: Generate release notes
+        if: steps.version.outputs.should_release == 'true'
         run: |
           python .xels-repo/scripts/generate-release-notes.py \
             --from-ref "${{ steps.version.outputs.notes_from_ref }}" \
             --output artifacts/release-notes.md
 
       - name: Dry run summary
-        if: inputs.dry_run == true
+        if: steps.version.outputs.should_release == 'true' && inputs.dry_run == true
         run: |
           echo "Dry run only."
           echo "Tag: ${{ steps.version.outputs.tag }}"
@@ -165,7 +167,7 @@ jobs:
           ls -la artifacts
 
       - name: Publish stable release
-        if: inputs.dry_run != true
+        if: steps.version.outputs.should_release == 'true' && inputs.dry_run != true
         id: release
         shell: bash
         run: |
@@ -186,7 +188,7 @@ jobs:
           echo "download_url=https://github.com/${{ github.repository }}/releases/download/${tag}/${internal_name}.zip" >> "$GITHUB_OUTPUT"
 
       - name: Update stable feed fields
-        if: inputs.dry_run != true
+        if: steps.version.outputs.should_release == 'true' && inputs.dry_run != true
         env:
           FEED_TOKEN: ${{ secrets.feed_token }}
         shell: bash
