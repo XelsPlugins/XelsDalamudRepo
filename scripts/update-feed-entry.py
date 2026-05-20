@@ -15,12 +15,10 @@ STABLE_FIELDS = {
     "AssemblyVersion",
     "DownloadLinkInstall",
     "DownloadLinkUpdate",
-    "Changelog",
     "LastUpdate",
 }
 TESTING_FIELDS = {
     "TestingAssemblyVersion",
-    "TestingChangelog",
     "TestingDalamudApiLevel",
     "DownloadLinkTesting",
 }
@@ -102,6 +100,10 @@ def testing_snapshot(entry: dict[str, object]) -> dict[str, object]:
     return {key: entry.get(key) for key in TESTING_FIELDS}
 
 
+def same_version_base(left: object, right: object) -> bool:
+    return version_key(left)[:3] == version_key(right)[:3]
+
+
 def write_github_output(status: str) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
     if not output_path:
@@ -117,7 +119,6 @@ def main() -> int:
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--download-url", required=True)
     parser.add_argument("--assembly-version", required=True)
-    parser.add_argument("--changelog", default="")
     parser.add_argument("--repo-url", required=True)
     parser.add_argument("--clear-testing", action="store_true")
     args = parser.parse_args()
@@ -153,10 +154,6 @@ def main() -> int:
     if args.mode == "testing":
         stable_before = stable_snapshot(before)
         entry["TestingAssemblyVersion"] = args.assembly_version
-        if args.changelog:
-            entry["TestingChangelog"] = args.changelog
-        else:
-            entry.pop("TestingChangelog", None)
         entry["TestingDalamudApiLevel"] = int(manifest.get("DalamudApiLevel", 0))
         entry["DownloadLinkTesting"] = args.download_url
         if stable_snapshot(entry) != stable_before:
@@ -166,14 +163,13 @@ def main() -> int:
         entry["AssemblyVersion"] = args.assembly_version
         entry["DownloadLinkInstall"] = args.download_url
         entry["DownloadLinkUpdate"] = args.download_url
-        if args.changelog:
-            entry["Changelog"] = args.changelog
-        else:
-            entry.pop("Changelog", None)
         entry["LastUpdate"] = int(time.time())
         if args.clear_testing:
             testing_version = entry.get("TestingAssemblyVersion")
-            if testing_version and version_key(testing_version) <= version_key(args.assembly_version):
+            if testing_version and (
+                same_version_base(testing_version, args.assembly_version)
+                or version_key(testing_version) <= version_key(args.assembly_version)
+            ):
                 for key in TESTING_FIELDS:
                     entry.pop(key, None)
         elif testing_snapshot(entry) != testing_before:

@@ -44,6 +44,17 @@ jobs:
           ref: ${{ inputs.automation_ref }}
           path: .xels-repo
 
+      - name: Validate pushed commit messages
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          before="${{ github.event.before }}"
+          if [ -z "$before" ] || [[ "$before" =~ ^0+$ ]]; then
+            python .xels-repo/scripts/validate-commit-messages.py
+          else
+            python .xels-repo/scripts/validate-commit-messages.py --range "${before}..HEAD"
+          fi
+
       - name: Detect ECommons reference
         id: ecommons
         shell: bash

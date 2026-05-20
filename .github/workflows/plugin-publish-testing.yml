@@ -114,7 +114,14 @@ jobs:
           python .xels-repo/scripts/calculate-version.py \
             --mode testing \
             --release-type "${{ inputs.release_type }}" \
-            --run-number "${{ github.run_number }}"
+            --run-number "${{ github.run_number }}" \
+            --feed .xels-repo/pluginmaster.json \
+            --internal-name "${{ inputs.internal_name }}"
+
+      - name: Validate testing commit messages
+        run: |
+          python .xels-repo/scripts/validate-commit-messages.py \
+            --from-ref "${{ steps.version.outputs.notes_from_ref }}"
 
       - name: Build testing package
         run: |
@@ -130,7 +137,7 @@ jobs:
       - name: Generate release notes
         run: |
           python .xels-repo/scripts/generate-release-notes.py \
-            --from-ref "${{ steps.version.outputs.current_tag }}" \
+            --from-ref "${{ steps.version.outputs.notes_from_ref }}" \
             --output artifacts/release-notes.md
 
       - name: Publish mutable testing release

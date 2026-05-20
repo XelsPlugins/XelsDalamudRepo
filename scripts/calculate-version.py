@@ -21,6 +21,7 @@ NO_BUMP_TYPES = {"docs", "style", "refactor", "test", "build", "ci", "chore"}
 PATCH_TYPES = {"fix", "perf"}
 MINOR_TYPES = {"feat"}
 BUMP_RANK = {"none": 0, "patch": 1, "minor": 2, "major": 3}
+ZERO_VERSION = (0, 0, 0, 0)
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,10 @@ def latest_stable_tag() -> StableTag:
         return StableTag(tag="", version=(0, 0, 0), legacy_build=0)
 
     return max(tags, key=lambda item: (*item.version, item.legacy_build))
+
+
+def tag_exists(tag: str) -> bool:
+    return bool(run_git(["rev-parse", "--verify", f"refs/tags/{tag}"], check=False))
 
 
 def git_log_messages(from_ref: str | None) -> list[str]:
@@ -124,6 +129,37 @@ def apply_bump(version: tuple[int, int, int], bump: str) -> tuple[int, int, int]
     return version
 
 
+def version_key(value: object) -> tuple[int, int, int, int]:
+    parts = str(value or "0.0.0.0").split(".")
+    numbers = [int(part) for part in parts if part.isdigit()]
+    while len(numbers) < 4:
+        numbers.append(0)
+    return tuple(numbers[:4])
+
+
+def version_base(value: tuple[int, int, int, int]) -> tuple[int, int, int]:
+    return value[:3]
+
+
+def feed_versions(feed_path: Path | None, internal_name: str) -> tuple[tuple[int, int, int, int], tuple[int, int, int, int]]:
+    if feed_path is None:
+        return ZERO_VERSION, ZERO_VERSION
+    if not internal_name:
+        raise SystemExit("--internal-name is required when --feed is provided")
+    if not feed_path.exists():
+        raise SystemExit(f"Feed file does not exist: {feed_path}")
+
+    data = json.loads(feed_path.read_text(encoding="utf-8"))
+    if not isinstance(data, list):
+        raise SystemExit("Feed file must contain a JSON array")
+
+    entry = next((item for item in data if isinstance(item, dict) and item.get("InternalName") == internal_name), None)
+    if entry is None:
+        return ZERO_VERSION, ZERO_VERSION
+
+    return version_key(entry.get("AssemblyVersion")), version_key(entry.get("TestingAssemblyVersion"))
+
+
 def write_github_output(values: dict[str, object]) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
     if not output_path:
@@ -139,6 +175,8 @@ def main() -> int:
     parser.add_argument("--mode", choices=["testing", "release"], required=True)
     parser.add_argument("--release-type", choices=["auto", "patch", "minor", "major"], default="auto")
     parser.add_argument("--run-number", default="0")
+    parser.add_argument("--feed", default="")
+    parser.add_argument("--internal-name", default="")
     args = parser.parse_args()
 
     stable = latest_stable_tag()
@@ -150,11 +188,16 @@ def main() -> int:
     should_release = args.mode == "testing" or bump != "none" or args.release_type != "auto"
     build = int(args.run_number or "0")
     if args.mode == "testing":
-        assembly_version = f"{next_version[0]}.{next_version[1]}.{next_version[2]}.{max(build, 1)}"
+        feed_stable, feed_testing = feed_versions(Path(args.feed) if args.feed else None, args.internal_name)
+        testing_base = max(next_version, version_base(feed_stable), version_base(feed_testing))
+        testing_build = max(build, feed_testing[3] + 1, 1)
+        assembly_version = f"{testing_base[0]}.{testing_base[1]}.{testing_base[2]}.{testing_build}"
         tag = "testing"
+        notes_from_ref = "testing" if tag_exists("testing") else stable.tag
     else:
         assembly_version = f"{next_version[0]}.{next_version[1]}.{next_version[2]}.0"
         tag = f"v{next_version[0]}.{next_version[1]}.{next_version[2]}"
+        notes_from_ref = stable.tag
 
     values: dict[str, object] = {
         "current_version": ".".join(str(part) for part in stable.version),
@@ -163,6 +206,7 @@ def main() -> int:
         "next_version": ".".join(str(part) for part in next_version),
         "assembly_version": assembly_version,
         "tag": tag,
+        "notes_from_ref": notes_from_ref,
         "should_release": str(should_release).lower(),
     }
 

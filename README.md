@@ -12,6 +12,8 @@ Normal users should stay on stable builds unless they intentionally enable testi
 
 Stable builds come from manually triggered release workflows in each plugin repository. Testing builds also come from manual workflow runs and update the mutable `testing` prerelease for each plugin.
 
+Release notes are generated for the GitHub Release or prerelease page. The plugin feed only carries version, API level, and download metadata.
+
 This repository also owns the shared GitHub Actions and helper scripts used by the plugin repositories for validation, testing publication, stable releases, packaging, and feed updates.
 
 This repository is not submitted to the official Dalamud plugin repository.
