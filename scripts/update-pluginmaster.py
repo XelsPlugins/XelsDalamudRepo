@@ -12,6 +12,7 @@ import tempfile
 import urllib.request
 import zipfile
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,8 @@ class ReleaseInfo:
     prerelease: bool
     draft: bool
     body: str
+    published_at: str
+    created_at: str
     assets: list[dict[str, Any]]
 
 
@@ -82,6 +85,8 @@ def load_releases(repo: str) -> list[ReleaseInfo]:
                 prerelease=bool(item.get("prerelease")),
                 draft=bool(item.get("draft")),
                 body=item.get("body") or "",
+                published_at=item.get("published_at") or "",
+                created_at=item.get("created_at") or "",
                 assets=item.get("assets") or [],
             )
         )
@@ -139,7 +144,20 @@ def normalize_repo_metadata(value: Any, repo: str) -> Any:
     return value
 
 
-def base_entry(manifest: dict[str, Any], repo: str, download_url: str) -> dict[str, Any]:
+def release_timestamp(release: ReleaseInfo) -> int:
+    raw = release.published_at or release.created_at
+    if not raw:
+        return 0
+
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return 0
+
+    return int(parsed.astimezone(timezone.utc).timestamp())
+
+
+def base_entry(manifest: dict[str, Any], repo: str, download_url: str, last_update: int) -> dict[str, Any]:
     download_url = normalize_repo_metadata(download_url, repo)
     entry: dict[str, Any] = {
         "Author": manifest.get("Author", ""),
@@ -158,7 +176,7 @@ def base_entry(manifest: dict[str, Any], repo: str, download_url: str) -> dict[s
         "Punchline": manifest.get("Punchline", ""),
         "AcceptsFeedback": bool(manifest.get("AcceptsFeedback", True)),
         "DownloadCount": 0,
-        "LastUpdate": 0,
+        "LastUpdate": last_update,
         "DownloadLinkInstall": download_url,
         "DownloadLinkUpdate": download_url,
         "DownloadLinkTesting": "",
@@ -196,7 +214,7 @@ def build_entries(repo: str) -> list[dict[str, Any]]:
 
     stable = max(stable_releases, key=lambda release: release_version_key(release.tag))
     manifest, download_url = manifest_from_assets(stable)
-    entry = base_entry(manifest, repo, download_url)
+    entry = base_entry(manifest, repo, download_url, release_timestamp(stable))
 
     testing = next(
         (release for release in releases if release.prerelease and release.tag == TESTING_TAG),
