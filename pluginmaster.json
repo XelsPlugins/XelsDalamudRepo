@@ -49,7 +49,7 @@
     "LastUpdate": 1779286063,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCurrencySpender/releases/download/v1.2.6/XelsCurrencySpender.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCurrencySpender/releases/download/v1.2.6/XelsCurrencySpender.zip",
-    "DownloadLinkTesting": "",
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsCurrencySpender/releases/download/testing/XelsCurrencySpender.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsCurrencySpender",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsCurrencySpender/main/XelsCurrencySpender/images/logo.png",
     "Tags": [
@@ -57,7 +57,9 @@
       "poetics",
       "tomestone"
     ],
-    "MinimumDalamudVersion": "15.0.0.0"
+    "MinimumDalamudVersion": "15.0.0.0",
+    "TestingAssemblyVersion": "1.2.6.2",
+    "TestingDalamudApiLevel": 15
   },
   {
     "Author": "xeltor",
