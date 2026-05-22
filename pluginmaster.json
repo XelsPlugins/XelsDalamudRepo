@@ -16,9 +16,10 @@
     "Punchline": "Stops you from standing in the wrong place like a dummy.",
     "AcceptsFeedback": true,
     "DownloadCount": 0,
-    "LastUpdate": 1779398860,
+    "LastUpdate": 1779398859,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.5.0/XelsCombatAI.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.5.0/XelsCombatAI.zip",
+    "DownloadLinkTesting": "",
     "RepoUrl": "https://github.com/XelsPlugins/XelsCombatAI",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsCombatAI/main/XelsCombatAI/images/icon.png",
     "Tags": [
