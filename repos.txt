@@ -1,5 +1,5 @@
 # One plugin repository slug per line.
 # Blank lines and comments are ignored.
 XelsPlugins/XelsCombatAI
+XelsPlugins/XelsCurrencySpender
 XelsPlugins/XelsTweaks
-
