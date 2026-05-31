@@ -63,7 +63,7 @@
     "Author": "xeltor",
     "Name": "XelsTweaks",
     "InternalName": "XelsTweaks",
-    "AssemblyVersion": "0.8.0.0",
+    "AssemblyVersion": "0.9.0.0",
     "Description": "A modular Dalamud tweak hub for opt-in interface and utility fixes.",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
@@ -76,10 +76,9 @@
     "Punchline": "For when staring at frustrations angrily doesn't resolve them!",
     "AcceptsFeedback": true,
     "DownloadCount": 0,
-    "LastUpdate": 1779312103,
-    "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.8.0/XelsTweaks.zip",
-    "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.8.0/XelsTweaks.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/testing/XelsTweaks.zip",
+    "LastUpdate": 1780250632,
+    "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.9.0/XelsTweaks.zip",
+    "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.9.0/XelsTweaks.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsTweaks",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
     "Tags": [
@@ -87,8 +86,6 @@
       "qol",
       "utility"
     ],
-    "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "0.9.0.5",
-    "TestingDalamudApiLevel": 15
+    "MinimumDalamudVersion": "15.0.0.0"
   }
 ]
