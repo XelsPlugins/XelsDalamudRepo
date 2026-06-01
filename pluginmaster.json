@@ -79,6 +79,7 @@
     "LastUpdate": 1780250632,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.9.0/XelsTweaks.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsTweaks/releases/download/v0.9.0/XelsTweaks.zip",
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsTweaks/releases/download/testing/XelsTweaks.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsTweaks",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsTweaks/main/XelsTweaks/images/logo.png",
     "Tags": [
@@ -86,6 +87,8 @@
       "qol",
       "utility"
     ],
-    "MinimumDalamudVersion": "15.0.0.0"
+    "MinimumDalamudVersion": "15.0.0.0",
+    "TestingAssemblyVersion": "0.9.0.5",
+    "TestingDalamudApiLevel": 15
   }
 ]
