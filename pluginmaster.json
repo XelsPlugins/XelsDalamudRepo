@@ -28,7 +28,7 @@
       "ai"
     ],
     "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "2.7.0.2",
+    "TestingAssemblyVersion": "2.7.0.3",
     "TestingDalamudApiLevel": 15
   },
   {
