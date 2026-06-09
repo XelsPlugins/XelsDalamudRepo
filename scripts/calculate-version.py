@@ -16,6 +16,7 @@ from pathlib import Path
 
 
 SEMVER_TAG_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)$")
+TESTING_TAG_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)-testing\.(?P<build>\d+)$")
 LEGACY_STABLE_TAG_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)\.(?P<build>\d+)$")
 HEADER_RE = re.compile(r"^(?P<type>[a-z]+)(?:\([^)]+\))?(?P<breaking>!)?: .+")
 
@@ -31,6 +32,13 @@ class StableTag:
     tag: str
     version: tuple[int, int, int]
     legacy_build: int
+
+
+@dataclass(frozen=True)
+class TestingTag:
+    tag: str
+    version: tuple[int, int, int]
+    build: int
 
 
 def run_git(args: list[str], check: bool = True) -> str:
@@ -82,17 +90,42 @@ def latest_stable_tag() -> StableTag:
     return max(tags, key=lambda item: (*item.version, item.legacy_build))
 
 
+def parse_testing_tag(tag: str) -> TestingTag | None:
+    match = TESTING_TAG_RE.match(tag)
+    if not match:
+        return None
+
+    return TestingTag(
+        tag=tag,
+        version=(int(match.group("major")), int(match.group("minor")), int(match.group("patch"))),
+        build=int(match.group("build")),
+    )
+
+
+def latest_testing_tag() -> TestingTag | None:
+    tags = []
+    for raw in run_git(["tag", "--list", "v*-testing.*"], check=False).splitlines():
+        parsed = parse_testing_tag(raw.strip())
+        if parsed is not None:
+            tags.append(parsed)
+
+    return max(tags, key=lambda item: (*item.version, item.build)) if tags else None
+
+
 def tag_exists(tag: str) -> bool:
     return bool(run_git(["rev-parse", "--verify", f"refs/tags/{tag}"], check=False))
 
 
-def git_log_messages(from_ref: str | None) -> list[str]:
+def git_log_messages(from_ref: str | None, oldest_first: bool = False) -> list[str]:
     range_arg = "HEAD"
     if from_ref:
         range_arg = f"{from_ref}..HEAD"
 
     output = run_git(["log", "--format=%B%x1e", range_arg], check=False)
-    return [part.strip() for part in output.split("\x1e") if part.strip()]
+    messages = [part.strip() for part in output.split("\x1e") if part.strip()]
+    if oldest_first:
+        messages.reverse()
+    return messages
 
 
 def bump_for_message(message: str) -> str:
@@ -115,17 +148,34 @@ def bump_for_message(message: str) -> str:
     return "none"
 
 
-def max_bump(messages: list[str], override: str) -> str:
+def additive_bump(version: tuple[int, int, int], messages: list[str], override: str) -> tuple[tuple[int, int, int], str]:
     if override != "auto":
-        return override
+        return apply_bump(version, override), override
 
-    bump = "none"
+    major, minor, patch = version
+    major_bumps = 0
+    minor_bumps = 0
+    patch_bumps = 0
+    highest_bump = "none"
     for message in messages:
-        candidate = bump_for_message(message)
-        if BUMP_RANK[candidate] > BUMP_RANK[bump]:
-            bump = candidate
+        bump = bump_for_message(message)
+        if BUMP_RANK[bump] > BUMP_RANK[highest_bump]:
+            highest_bump = bump
+        if bump == "major":
+            major_bumps += 1
+        elif bump == "minor":
+            minor_bumps += 1
+        elif bump == "patch":
+            patch_bumps += 1
 
-    return bump
+    if major_bumps:
+        return (major + major_bumps, minor_bumps, patch_bumps), highest_bump
+    if minor_bumps:
+        return (major, minor + minor_bumps, patch_bumps), highest_bump
+    if patch_bumps:
+        return (major, minor, patch + patch_bumps), highest_bump
+
+    return version, highest_bump
 
 
 def apply_bump(version: tuple[int, int, int], bump: str) -> tuple[int, int, int]:
@@ -236,21 +286,31 @@ def main() -> int:
     args = parser.parse_args()
 
     stable = latest_stable_tag()
-    messages = git_log_messages(stable.tag or None)
+    messages = git_log_messages(stable.tag or None, oldest_first=True)
 
-    bump = max_bump(messages, args.release_type)
-    next_version = apply_bump(stable.version, bump)
+    next_version, bump = additive_bump(stable.version, messages, args.release_type)
 
     should_release = args.mode == "testing" or bump != "none" or args.release_type != "auto"
     build = int(args.run_number or "0")
     if args.mode == "testing":
         feed_stable, feed_testing = feed_versions(Path(args.feed) if args.feed else None, args.internal_name)
         historical_testing = historical_release_version(args.repo, args.internal_name)
-        testing_base = max(next_version, version_base(feed_stable), version_base(feed_testing), version_base(historical_testing))
-        testing_build = max(build, feed_testing[3] + 1, historical_testing[3] + 1, 1)
+        latest_testing = latest_testing_tag()
+        latest_testing_version = latest_testing.version if latest_testing is not None else (0, 0, 0)
+        testing_base = max(
+            next_version,
+            version_base(feed_stable),
+            version_base(feed_testing),
+            version_base(historical_testing),
+            latest_testing_version,
+        )
+        testing_build_candidates = [build, feed_testing[3] + 1, historical_testing[3] + 1, 1]
+        if latest_testing is not None and latest_testing.version == testing_base:
+            testing_build_candidates.append(latest_testing.build + 1)
+        testing_build = max(testing_build_candidates)
         assembly_version = f"{testing_base[0]}.{testing_base[1]}.{testing_base[2]}.{testing_build}"
-        tag = "testing"
-        notes_from_ref = "testing" if tag_exists("testing") else stable.tag
+        tag = f"v{testing_base[0]}.{testing_base[1]}.{testing_base[2]}-testing.{testing_build}"
+        notes_from_ref = latest_testing.tag if latest_testing is not None else ("testing" if tag_exists("testing") else stable.tag)
     else:
         assembly_version = f"{next_version[0]}.{next_version[1]}.{next_version[2]}.0"
         tag = f"v{next_version[0]}.{next_version[1]}.{next_version[2]}"

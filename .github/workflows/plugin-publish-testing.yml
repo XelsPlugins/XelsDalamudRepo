@@ -141,7 +141,7 @@ jobs:
             --from-ref "${{ steps.version.outputs.notes_from_ref }}" \
             --output artifacts/release-notes.md
 
-      - name: Publish mutable testing release
+      - name: Publish testing release
         id: release
         shell: bash
         run: |
@@ -154,22 +154,21 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -f "$tag" "$target_sha"
-          git push -f origin "refs/tags/${tag}"
-
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag already exists: $tag"
+            exit 1
+          fi
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release edit "$tag" \
-              --title "${internal_name} Testing Build" \
-              --notes-file artifacts/release-notes.md \
-              --prerelease
-          else
-            gh release create "$tag" \
-              --title "${internal_name} Testing Build" \
-              --notes-file artifacts/release-notes.md \
-              --prerelease
+            echo "Release already exists: $tag"
+            exit 1
           fi
 
-          gh release upload "$tag" "$zip_path" "$manifest_path" --clobber
+          git tag "$tag" "$target_sha"
+          git push origin "refs/tags/${tag}"
+          gh release create "$tag" "$zip_path" "$manifest_path" \
+            --title "${internal_name} ${tag}" \
+            --notes-file artifacts/release-notes.md \
+            --prerelease
           echo "internal_name=${internal_name}" >> "$GITHUB_OUTPUT"
           echo "download_url=https://github.com/${{ github.repository }}/releases/download/${tag}/${internal_name}.zip" >> "$GITHUB_OUTPUT"
           echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"

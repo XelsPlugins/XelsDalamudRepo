@@ -36,7 +36,7 @@ These instructions apply to the custom Dalamud feed repository.
 
 - Reusable plugin workflows live in `.github/workflows/`.
 - Helper scripts live in `scripts/` and are shared by `XelsTweaks` and `XelsCombatAI`.
-- Testing publication uses a mutable prerelease tagged `testing`; do not restore `pr-*` release tags to feed generation.
+- Testing publication uses unique prerelease tags like `vX.Y.Z-testing.N`; do not restore `pr-*` release tags to feed generation.
 - Stable releases use immutable `vX.Y.Z` tags.
 
 ## Commit Message Standards
