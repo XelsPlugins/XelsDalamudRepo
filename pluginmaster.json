@@ -19,7 +19,7 @@
     "LastUpdate": 1781050073,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.13.5/XelsCombatAI.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.13.5/XelsCombatAI.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.14.4-testing.12/XelsCombatAI.zip",
+    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.14.4-testing.13/XelsCombatAI.zip",
     "RepoUrl": "https://github.com/XelsPlugins/XelsCombatAI",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsCombatAI/main/XelsCombatAI/images/icon.png",
     "Tags": [
@@ -28,7 +28,7 @@
       "ai"
     ],
     "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "2.14.4.12",
+    "TestingAssemblyVersion": "2.14.4.13",
     "TestingDalamudApiLevel": 15
   },
   {
