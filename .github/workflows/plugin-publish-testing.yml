@@ -30,6 +30,10 @@ on:
         required: false
         type: string
         default: main
+      build_configuration:
+        required: false
+        type: string
+        default: Release
     secrets:
       feed_token:
         required: true
@@ -127,10 +131,10 @@ jobs:
       - name: Build testing package
         run: |
           dotnet restore "${{ inputs.plugin_project_path }}" -p:EnableWindowsTargeting=true
-          dotnet build "${{ inputs.plugin_project_path }}" -c Release -p:EnableWindowsTargeting=true -p:Version=${{ steps.version.outputs.assembly_version }} -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} -p:FileVersion=${{ steps.version.outputs.assembly_version }} -p:InformationalVersion=${{ steps.version.outputs.assembly_version }} --no-restore
+          dotnet build "${{ inputs.plugin_project_path }}" -c "${{ inputs.build_configuration }}" -p:EnableWindowsTargeting=true -p:Version=${{ steps.version.outputs.assembly_version }} -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} -p:FileVersion=${{ steps.version.outputs.assembly_version }} -p:InformationalVersion=${{ steps.version.outputs.assembly_version }} --no-restore
           python .xels-repo/scripts/package-plugin.py \
             --project "${{ inputs.plugin_project_path }}" \
-            --configuration Release \
+            --configuration "${{ inputs.build_configuration }}" \
             --internal-name "${{ inputs.internal_name }}" \
             --version "${{ steps.version.outputs.assembly_version }}" \
             --no-build

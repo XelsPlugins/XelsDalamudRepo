@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import zipfile
 from pathlib import Path
+from pathlib import PurePosixPath
 
 
 def run(args: list[str]) -> None:
@@ -50,8 +51,20 @@ def find_packager_zip(project: Path, configuration: str, internal_name: str) -> 
     for candidate in candidates:
         if candidate.exists():
             return candidate
-    found = sorted((project_dir / "bin").glob(f"**/{internal_name}/latest.zip"))
-    return found[-1] if found else None
+    return None
+
+
+def find_build_output_dir(project: Path, configuration: str, internal_name: str) -> Path:
+    project_dir = project.parent
+    candidates = [
+        project_dir / "bin" / configuration,
+        project_dir / "bin" / "x64" / configuration,
+    ]
+    for candidate in candidates:
+        if (candidate / f"{internal_name}.dll").exists() and (candidate / f"{internal_name}.json").exists():
+            return candidate
+
+    raise SystemExit(f"Build output was not found for {internal_name} {configuration}")
 
 
 def manifest_from_zip(zip_path: Path, internal_name: str) -> dict[str, object] | None:
@@ -60,6 +73,52 @@ def manifest_from_zip(zip_path: Path, internal_name: str) -> dict[str, object] |
             if Path(name).name == f"{internal_name}.json":
                 return json.loads(archive.read(name).decode("utf-8"))
     return None
+
+
+def package_cache_dir() -> Path:
+    return Path(os.environ.get("NUGET_PACKAGES", Path.home() / ".nuget" / "packages"))
+
+
+def dependency_asset_source(library_name: str, asset: str) -> Path | None:
+    if "/" not in library_name:
+        return None
+
+    package_id, version = library_name.split("/", 1)
+    candidate = package_cache_dir() / package_id.lower() / version / PurePosixPath(asset)
+    return candidate if candidate.exists() else None
+
+
+def build_output_zip(project: Path, configuration: str, internal_name: str, zip_output: Path) -> None:
+    build_output = find_build_output_dir(project, configuration, internal_name)
+    deps_path = build_output / f"{internal_name}.deps.json"
+    added: set[str] = set()
+    with zipfile.ZipFile(zip_output, "w", zipfile.ZIP_DEFLATED) as archive:
+        for path in sorted(build_output.rglob("*")):
+            if not path.is_file() or path.name == "latest.zip":
+                continue
+
+            archive_name = path.relative_to(build_output).as_posix()
+            archive.write(path, archive_name)
+            added.add(archive_name)
+
+        if not deps_path.exists():
+            return
+
+        deps = json.loads(deps_path.read_text(encoding="utf-8"))
+        for target in deps.get("targets", {}).values():
+            for library_name, library in target.items():
+                for section in ("runtime", "runtimeTargets"):
+                    for asset in library.get(section, {}):
+                        archive_name = asset if asset.startswith("runtimes/") else PurePosixPath(asset).name
+                        if archive_name in added:
+                            continue
+
+                        source = dependency_asset_source(library_name, asset)
+                        if source is None:
+                            continue
+
+                        archive.write(source, archive_name)
+                        added.add(archive_name)
 
 
 def main() -> int:
@@ -89,17 +148,18 @@ def main() -> int:
             build_args.append(f"-p:InformationalVersion={args.version}")
         run(build_args)
 
-    packager_zip = find_packager_zip(project, args.configuration, internal_name)
-    if packager_zip is None:
-        raise SystemExit(f"DalamudPackager did not produce latest.zip for {internal_name}")
-
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     zip_output = output_dir / f"{internal_name}.zip"
     json_output = output_dir / f"{internal_name}.json"
 
-    shutil.copyfile(packager_zip, zip_output)
-    built_manifest = manifest_from_zip(packager_zip, internal_name) or source_manifest
+    packager_zip = find_packager_zip(project, args.configuration, internal_name)
+    if packager_zip is None:
+        build_output_zip(project, args.configuration, internal_name, zip_output)
+    else:
+        shutil.copyfile(packager_zip, zip_output)
+
+    built_manifest = manifest_from_zip(zip_output, internal_name) or source_manifest
     if args.version and str(built_manifest.get("AssemblyVersion", "")) != args.version:
         raise SystemExit(
             f"Built manifest AssemblyVersion {built_manifest.get('AssemblyVersion')} "
