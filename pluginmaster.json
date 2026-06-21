@@ -19,7 +19,7 @@
     "LastUpdate": 1781050073,
     "DownloadLinkInstall": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.13.5/XelsCombatAI.zip",
     "DownloadLinkUpdate": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.13.5/XelsCombatAI.zip",
-    "DownloadLinkTesting": "https://github.com/XelsPlugins/XelsCombatAI/releases/download/v2.19.5-testing.15/XelsCombatAI.zip",
+    "DownloadLinkTesting": "",
     "RepoUrl": "https://github.com/XelsPlugins/XelsCombatAI",
     "IconUrl": "https://raw.githubusercontent.com/XelsPlugins/XelsCombatAI/main/XelsCombatAI/images/icon.png",
     "Tags": [
@@ -27,9 +27,7 @@
       "bossmod",
       "ai"
     ],
-    "MinimumDalamudVersion": "15.0.0.0",
-    "TestingAssemblyVersion": "2.19.5.15",
-    "TestingDalamudApiLevel": 15
+    "MinimumDalamudVersion": "15.0.0.0"
   },
   {
     "Author": "Xeltor / XelsPlugins, originally by Blackcatz1911",
